@@ -4,19 +4,13 @@
 
 <script>
 function auth() {
-fetch("https://script.google.com/macros/s/AKfycbwGFxVijLaLpd8tklJNaS4WXxXhLd-qT4aGHp-d23jwMUKjoKT_5ez1cDv984SC7yY/exec", {
-  method: "POST",
-  mode: "cors",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    login: document.getElementById("login").value,
-    password: document.getElementById("password").value
-  })
-})
-.then(r => r.text())
-.then(d => alert(d))
-.catch(e => alert(e));
+  const login = document.getElementById("login").value;
+  const password = document.getElementById("password").value;
 
+  fetch(`https://script.google.com/macros/s/ТВІЙ_ID/exec?login=${login}&password=${password}`)
+    .then(r => r.json())
+    .then(d => alert(JSON.stringify(d)));
 }
+
 </script>
 
