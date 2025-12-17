@@ -1,26 +1,84 @@
-<input id="login" placeholder="Логін">
-<input id="password" type="password" placeholder="Пароль">
-<button onclick="auth()">ВХІД</button>
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DimObl — Вхід</title>
+  <style>
+    body { margin:0; font-family: Arial, sans-serif; background:#2f2f2f; color:#fff; }
+    .wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .card { width:360px; background:#3a3a3a; border-radius:14px; padding:22px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+    h1 { margin:0 0 18px; text-align:center; letter-spacing:1px; }
+    input { width:100%; padding:14px; margin:10px 0; border-radius:10px; border:0; outline:none; font-size:16px; }
+    button { width:100%; padding:14px; border:0; border-radius:10px; font-size:18px; font-weight:700; cursor:pointer; background:#18e000; }
+    button:disabled { opacity:.6; cursor:not-allowed; }
+    .row { display:flex; gap:10px; align-items:center; margin-top:8px; }
+    .msg { margin-top:12px; min-height:20px; font-size:14px; opacity:.95; }
+    .small { font-size:12px; opacity:.8; margin-top:10px; text-align:center; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>DimObl</h1>
+
+    <input id="login" placeholder="Логін" autocomplete="username" />
+    <input id="password" type="password" placeholder="Пароль" autocomplete="current-password" />
+
+    <button id="btn" onclick="auth()">ВХІД</button>
+    <div class="msg" id="msg"></div>
+    <div class="small">Після входу сесія зберігається (12 год)</div>
+  </div>
+</div>
 
 <script>
-function auth() {
-  const login = document.getElementById("login").value;
-  const password = document.getElementById("password").value;
+  // === ВСТАВ СВІЙ URL WEB APP (закінчується на /exec) ===
+  const API_URL = "PASTE_YOUR_WEBAPP_EXEC_URL_HERE";
 
-  const url = "https://script.google.com/macros/s/AKfycbwUdRtkH3ZqKqFBlxngtjkGXn1lNCkR-FLs4v7nbcmDVmnmxmpWiHtuHuloVbFrCH7C/exec"
-    + "?login=" + encodeURIComponent(login)
-    + "&password=" + encodeURIComponent(password);
+  // Якщо вже є токен — одразу на dashboard
+  (function autoRedirectIfLoggedIn(){
+    const token = localStorage.getItem("dimobl_token");
+    if (token) location.href = "dashboard.html";
+  })();
 
-  fetch(url)
-    .then(r => r.json())
-    .then(d => {
+  // Enter -> ВХІД
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") auth();
+  });
+
+  function setMsg(t){ document.getElementById("msg").textContent = t || ""; }
+
+  async function auth() {
+    const btn = document.getElementById("btn");
+    const login = document.getElementById("login").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!login || !password) { setMsg("Введіть логін і пароль"); return; }
+
+    btn.disabled = true;
+    setMsg("Перевіряю...");
+
+    try {
+      const url = `${API_URL}?action=login&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`;
+      const r = await fetch(url);
+      const d = await r.json();
+
       if (d.status === "OK") {
-        alert("Вітаю, " + d.name + " (" + d.role + ")");
-        // тут буде redirect
+        localStorage.setItem("dimobl_token", d.token);
+        localStorage.setItem("dimobl_role", d.role || "");
+        localStorage.setItem("dimobl_name", d.name || "");
+
+        // Редирект за ролями (можеш змінити логіку)
+        location.href = "dashboard.html";
       } else {
-        alert(d.message);
+        setMsg(d.message || "Помилка входу");
       }
-    })
-    .catch(err => alert("Помилка запиту"));
-}
+    } catch (err) {
+      setMsg("Помилка запиту (Failed to fetch)");
+    } finally {
+      btn.disabled = false;
+    }
+  }
 </script>
+</body>
+</html>
