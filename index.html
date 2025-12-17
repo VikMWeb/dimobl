@@ -7,10 +7,10 @@ function auth() {
   const login = document.getElementById("login").value;
   const password = document.getElementById("password").value;
 
-  fetch(`https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbwGFxVijLaLpd8tklJNaS4WXxXhLd-qT4aGHp-d23jwMUKjoKT_5ez1cDv984SC7yY/exec?login=${login}&password=${password}`)
+  fetch(`https://script.google.com/macros/s/AKfycbwGFxVijLaLpd8tklJNaS4WXxXhLd-qT4aGHp-d23jwMUKjoKT_5ez1cDv984SC7yY/exec?login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`)
     .then(r => r.json())
-    .then(d => alert(JSON.stringify(d)));
+    .then(d => alert(JSON.stringify(d)))
+    .catch(e => alert("Помилка запиту"));
 }
-
 </script>
 
