@@ -1,23 +1,26 @@
-<input id="login" placeholder="логін">
-<input id="password" type="password" placeholder="пароль">
-<button onclick="auth()">Увійти</button>
+<input id="login" placeholder="Логін">
+<input id="password" type="password" placeholder="Пароль">
+<button onclick="auth()">ВХІД</button>
 
 <script>
 function auth() {
   const login = document.getElementById("login").value;
   const password = document.getElementById("password").value;
 
-  const url = `https://script.google.com/macros/s/AKfycbwGFxVijLaLpd8tklJNaS4WXxXhLd-qT4aGHp-d23jwMUKjoKT_5ez1cDv984SC7yY/exec?login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`;
+  const url = "https://script.google.com/macros/s/AKfycbwGFxVijLaLpd8tklJNaS4WXxXhLd-qT4aGHp-d23jwMUKjoKT_5ez1cDv984SC7yY/exec"
+    + "?login=" + encodeURIComponent(login)
+    + "&password=" + encodeURIComponent(password);
 
   fetch(url)
     .then(r => r.json())
     .then(d => {
       if (d.status === "OK") {
-        alert("Вхід успішний: " + d.name + " (" + d.role + ")");
+        alert("Вітаю, " + d.name + " (" + d.role + ")");
+        // тут буде redirect
       } else {
         alert(d.message);
       }
     })
-    .catch(e => alert("Помилка запиту"));
+    .catch(err => alert("Помилка запиту"));
 }
 </script>
