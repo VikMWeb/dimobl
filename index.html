@@ -35,50 +35,33 @@
   // === ВСТАВ СВІЙ URL WEB APP (закінчується на /exec) ===
   const API_URL = "https://script.google.com/macros/s/AKfycbx8N3iOi7I4GAz7DBZLpk0uI0ZRFHnGVyFok5aUpimZMuGzruCWRGaRgz6h-nXdSlHZ/exec";
 
-  // Якщо вже є токен — одразу на dashboard
-  (function autoRedirectIfLoggedIn(){
-    const token = localStorage.getItem("dimobl_token");
-    if (token) location.href = "dashboard.html";
-  })();
+async function auth() {
+  const login = document.getElementById("login").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if (!login || !password) return alert("Введіть логін і пароль");
 
-  // Enter -> ВХІД
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") auth();
-  });
+  try {
+    const url = `${API_URL}?action=login&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`;
+    const r = await fetch(url);
+    const d = await r.json();
 
-  function setMsg(t){ document.getElementById("msg").textContent = t || ""; }
+    if (d.status !== "OK") return alert(d.message || "Помилка входу");
 
-  async function auth() {
-    const btn = document.getElementById("btn");
-    const login = document.getElementById("login").value.trim();
-    const password = document.getElementById("password").value.trim();
+    // зберігаємо сесію
+    localStorage.setItem("dimobl_token", d.token);
+    localStorage.setItem("dimobl_role", d.role);
+    localStorage.setItem("dimobl_name", d.name);
 
-    if (!login || !password) { setMsg("Введіть логін і пароль"); return; }
+    // РЕДИРЕКТ ЗА РОЛЛЮ
+    if (d.role === "admin") location.href = "admin.html";
+    else if (d.role === "модератор") location.href = "moderator.html";
+    else location.href = "guest.html";
 
-    btn.disabled = true;
-    setMsg("Перевіряю...");
-
-    try {
-      const url = `${API_URL}?action=login&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`;
-      const r = await fetch(url);
-      const d = await r.json();
-
-      if (d.status === "OK") {
-        localStorage.setItem("dimobl_token", d.token);
-        localStorage.setItem("dimobl_role", d.role || "");
-        localStorage.setItem("dimobl_name", d.name || "");
-
-        // Редирект за ролями (можеш змінити логіку)
-        location.href = "dashboard.html";
-      } else {
-        setMsg(d.message || "Помилка входу");
-      }
-    } catch (err) {
-      setMsg("Помилка запиту (Failed to fetch)");
-    } finally {
-      btn.disabled = false;
-    }
+  } catch (e) {
+    alert("Помилка запиту");
   }
+}
 </script>
+
 </body>
 </html>
