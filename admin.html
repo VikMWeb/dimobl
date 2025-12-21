@@ -17,37 +17,7 @@ const REQUIRED_ROLE = "admin";
 
 <!-- ⬇ ВСТАВ СЮДИ ЗАГАЛЬНИЙ СКРИПТ З П.2 -->
 
-  <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyX9sLQl6M7HftZhA1WccI_uo6JmxGm1DzifsFmVp4BzPcZQSyd8HixmQ-_igGZeryu/exec";
-const REQUIRED_ROLE = "admin"; // ← МІНЯЄТЬСЯ
-
-async function checkAccess() {
-  const token = localStorage.getItem("dimobl_token");
-  const role  = localStorage.getItem("dimobl_role");
-  const name  = localStorage.getItem("dimobl_name");
-
-  if (!token || role !== REQUIRED_ROLE) return logout();
-
-  try {
-    const r = await fetch(`${API_URL}?action=check&token=${encodeURIComponent(token)}`);
-    const d = await r.json();
-    if (d.status !== "OK") return logout();
-
-    document.getElementById("user").textContent = `${name} (${role})`;
-  } catch {
-    logout();
-  }
-}
-
-function logout() {
-  localStorage.clear();
-  location.href = "index.html";
-}
-
-checkAccess();
-</script>
-
-  <script>
+   <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyX9sLQl6M7HftZhA1WccI_uo6JmxGm1DzifsFmVp4BzPcZQSyd8HixmQ-_igGZeryu/exec";
 const REQUIRED_ROLE = "admin";         // ← змінюється для кожної сторінки
 const IDLE_MINUTES = 5;                // ← твій пункт “5”
