@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Модератор</title>
+</head>
+<body>
+
+<h1>🛠 Модератор</h1>
+<div id="user"></div>
+
+<button onclick="logout()">Вийти</button>
+
+<script>
+const REQUIRED_ROLE = "модератор";
+</script>
+
+<!-- ⬇ ВСТАВ СЮДИ ЗАГАЛЬНИЙ СКРИПТ З П.2 -->
+
+  <script>
+const API_URL = "ТУТ_ТВІЙ_WEB_APP_EXEC_URL";
+const REQUIRED_ROLE = "admin"; // ← МІНЯЄТЬСЯ
+
+async function checkAccess() {
+  const token = localStorage.getItem("dimobl_token");
+  const role  = localStorage.getItem("dimobl_role");
+  const name  = localStorage.getItem("dimobl_name");
+
+  if (!token || role !== REQUIRED_ROLE) return logout();
+
+  try {
+    const r = await fetch(`${API_URL}?action=check&token=${encodeURIComponent(token)}`);
+    const d = await r.json();
+    if (d.status !== "OK") return logout();
+
+    document.getElementById("user").textContent = `${name} (${role})`;
+  } catch {
+    logout();
+  }
+}
+
+function logout() {
+  localStorage.clear();
+  location.href = "index.html";
+}
+
+checkAccess();
+</script>
+
+  
+</body>
+</html>
