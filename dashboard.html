@@ -1,1 +1,65 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DimObl — Кабінет</title>
+  <style>
+    body { margin:0; font-family: Arial, sans-serif; background:#f4f4f4; }
+    .top { background:#222; color:#fff; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; }
+    .box { padding:18px; }
+    button { padding:10px 14px; border:0; border-radius:8px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div id="who">DimObl</div>
+    <button onclick="logout()">Вийти</button>
+  </div>
+
+  <div class="box">
+    <h2>Головна сторінка</h2>
+    <div id="info">Перевіряю сесію...</div>
+  </div>
+
+<script>
+  const API_URL = "PASTE_YOUR_WEBAPP_EXEC_URL_HERE";
+
+  async function checkSession() {
+    const token = localStorage.getItem("dimobl_token");
+    if (!token) return goLogin();
+
+    try {
+      const url = `${API_URL}?action=check&token=${encodeURIComponent(token)}`;
+      const r = await fetch(url);
+      const d = await r.json();
+
+      if (d.status !== "OK") return goLogin();
+
+      const u = d.user;
+      document.getElementById("who").textContent = `Кабінет: ${u.name} (${u.role})`;
+      document.getElementById("info").textContent = "Сесія активна ✅";
+    } catch (e) {
+      goLogin();
+    }
+  }
+
+  function goLogin(){
+    localStorage.removeItem("dimobl_token");
+    localStorage.removeItem("dimobl_role");
+    localStorage.removeItem("dimobl_name");
+    location.href = "index.html";
+  }
+
+  async function logout(){
+    // необов’язково викликати API, але залишив “красиво”
+    const token = localStorage.getItem("dimobl_token") || "";
+    try { await fetch(`${API_URL}?action=logout&token=${encodeURIComponent(token)}`); } catch(e){}
+    goLogin();
+  }
+
+  checkSession();
+</script>
+</body>
+</html>
 
