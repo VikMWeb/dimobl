@@ -12,39 +12,71 @@
 <button onclick="logout()">Вийти</button>
 
 <script>
-const REQUIRED_ROLE = "модератор";
-</script>
+const API_URL = "https://script.google.com/macros/s/AKfycbyX9sLQl6M7HftZhA1WccI_uo6JmxGm1DzifsFmVp4BzPcZQSyd8HixmQ-_igGZeryu/exec";
+const REQUIRED_ROLE = "admin";         // ← змінюється для кожної сторінки
+const IDLE_MINUTES = 5;                // ← твій пункт “5”
 
-<!-- ⬇ ВСТАВ СЮДИ ЗАГАЛЬНИЙ СКРИПТ З П.2 -->
+let idleTimer = null;
 
-  <script>
-const API_URL = "ТУТ_ТВІЙ_WEB_APP_EXEC_URL";
-const REQUIRED_ROLE = "admin"; // ← МІНЯЄТЬСЯ
+function logout(){
+  localStorage.clear();
+  location.href = "index.html";
+}
 
-async function checkAccess() {
+function startIdleTimer(){
+  const ms = IDLE_MINUTES * 60 * 1000;
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(()=> logout(), ms);
+}
+
+// скид таймера на будь-яку дію
+["click","mousemove","keydown","scroll","touchstart"].forEach(ev=>{
+  document.addEventListener(ev, startIdleTimer, {passive:true});
+});
+startIdleTimer();
+
+function showLastLogin(text){
+  const el = document.getElementById("lastLogin");
+  if (!el) return;
+  el.textContent = text ? `Останній вхід: ${text}` : `Останній вхід: —`;
+}
+
+function applyPermissions(role){
+  // Показ/сховати елементи за атрибутом data-role="admin,модератор"
+  document.querySelectorAll("[data-role]").forEach(el=>{
+    const list = el.getAttribute("data-role").split(",").map(s=>s.trim());
+    el.style.display = list.includes(role) ? "" : "none";
+  });
+}
+
+(async function checkAccess(){
   const token = localStorage.getItem("dimobl_token");
   const role  = localStorage.getItem("dimobl_role");
   const name  = localStorage.getItem("dimobl_name");
 
   if (!token || role !== REQUIRED_ROLE) return logout();
 
-  try {
+  try{
     const r = await fetch(`${API_URL}?action=check&token=${encodeURIComponent(token)}`);
     const d = await r.json();
     if (d.status !== "OK") return logout();
 
-    document.getElementById("user").textContent = `${name} (${role})`;
-  } catch {
+    // якщо роль/ім'я змінились — оновимо
+    localStorage.setItem("dimobl_role", d.role);
+    localStorage.setItem("dimobl_name", d.name);
+
+    if (d.role !== REQUIRED_ROLE) return logout();
+
+    const userEl = document.getElementById("user");
+    if (userEl) userEl.textContent = `${d.name} (${d.role})`;
+
+    showLastLogin(d.lastLogin || localStorage.getItem("dimobl_lastLogin") || "");
+    applyPermissions(d.role);
+
+  }catch{
     logout();
   }
-}
-
-function logout() {
-  localStorage.clear();
-  location.href = "index.html";
-}
-
-checkAccess();
+})();
 </script>
 
   
