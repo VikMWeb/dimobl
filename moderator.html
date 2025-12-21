@@ -51,32 +51,37 @@ function applyPermissions(role){
 
 (async function checkAccess(){
   const token = localStorage.getItem("dimobl_token");
-  const role  = localStorage.getItem("dimobl_role");
-  const name  = localStorage.getItem("dimobl_name");
 
-  if (!token || role !== REQUIRED_ROLE) return logout();
+  // ❗ Перша перевірка — ТІЛЬКИ token
+  if (!token) return logout();
 
   try{
     const r = await fetch(`${API_URL}?action=check&token=${encodeURIComponent(token)}`);
     const d = await r.json();
+
     if (d.status !== "OK") return logout();
 
-    // якщо роль/ім'я змінились — оновимо
-    localStorage.setItem("dimobl_role", d.role);
+    // нормалізація ролі
+    const apiRole = String(d.role || "").toLowerCase();
+
+    // ❗ РОЛЬ ПЕРЕВІРЯЄМО ТУТ
+    if (apiRole !== REQUIRED_ROLE) return logout();
+
+    // оновлюємо localStorage тільки ПІСЛЯ API
+    localStorage.setItem("dimobl_role", apiRole);
     localStorage.setItem("dimobl_name", d.name);
 
-    if (d.role !== REQUIRED_ROLE) return logout();
-
     const userEl = document.getElementById("user");
-    if (userEl) userEl.textContent = `${d.name} (${d.role})`;
+    if (userEl) userEl.textContent = `${d.name} (${apiRole})`;
 
     showLastLogin(d.lastLogin || localStorage.getItem("dimobl_lastLogin") || "");
-    applyPermissions(d.role);
+    applyPermissions(apiRole);
 
-  }catch{
+  } catch {
     logout();
   }
 })();
+
 </script>
 
   
