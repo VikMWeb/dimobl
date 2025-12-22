@@ -17,12 +17,7 @@
   --btn2:#f3f6fb;
 }
 
-body{
-  margin:0;
-  font-family:system-ui,Segoe UI,Arial;
-  background:var(--bg);
-  color:var(--text);
-}
+body{ margin:0; font-family:system-ui,Segoe UI,Arial; background:var(--bg); color:var(--text); }
 
 .wrap{
   min-height:100vh;
@@ -31,7 +26,6 @@ body{
   justify-content:center;
   padding:18px;
 }
-
 .card{
   width:min(520px,100%);
   background:var(--card);
@@ -39,22 +33,13 @@ body{
   border-radius:18px;
   padding:22px;
 }
+.top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.brand{ font-weight:800; font-size:26px; }
+.muted{ color:var(--muted); font-size:13px; }
 
-.top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:14px;
-}
-
-.brand{
-  font-weight:800;
-  font-size:26px;
-}
-
-.muted{
-  color:var(--muted);
-  font-size:13px;
+.statusLine{
+  margin-top:4px;
+  min-height:18px;
 }
 
 .grid{
@@ -83,12 +68,10 @@ button{
   transition:.15s;
   text-align:left;
 }
-
 button:hover{
   transform:translateY(-1px);
   box-shadow:0 6px 20px rgba(0,0,0,.25);
 }
-
 button.main{
   background:var(--btn);
   color:var(--btnText);
@@ -100,13 +83,6 @@ button.ctrl{
   width:54px;
   padding:14px 0;
   text-align:center;
-}
-
-.footer{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-top:18px;
 }
 
 /* панель додавання */
@@ -129,6 +105,19 @@ button.ctrl{
   outline:none;
   box-sizing:border-box;
 }
+
+.footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:18px;
+  gap:10px;
+}
+.footerRight{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
 </style>
 </head>
 
@@ -140,6 +129,7 @@ button.ctrl{
       <div>
         <div class="brand">👑 Адмін-Панель</div>
         <div class="muted" id="user">—</div>
+        <div class="muted statusLine" id="editStatus"></div>
       </div>
       <button onclick="toggleTheme()">🌓</button>
     </div>
@@ -150,7 +140,8 @@ button.ctrl{
     <!-- Панель редагування -->
     <div class="editBox" id="editBox">
       <div class="editRow">
-        <input id="newCat" class="editInput" placeholder="Нова категорія (назва)">
+        <input id="newCatName" class="editInput" placeholder="Нова категорія (назва)">
+        <input id="newCatIcon" class="editInput" style="max-width:120px" placeholder="😀">
         <button onclick="addCategory()" style="width:auto; padding:16px;">Додати</button>
       </div>
       <div class="muted" style="margin-top:8px;">
@@ -160,7 +151,15 @@ button.ctrl{
 
     <div class="footer">
       <button onclick="logout()">Вийти</button>
-      <button class="main" onclick="toggleEdit()">РЕДАГУВАТИ</button>
+
+      <div class="footerRight">
+        <!-- Показуємо тільки в editMode -->
+        <button id="btnCancel" style="display:none;" onclick="cancelEdit()">Відмінити</button>
+        <button id="btnSave" class="main" style="display:none;" onclick="saveEdit()">Зберегти</button>
+
+        <!-- Показуємо тільки коли НЕ editMode -->
+        <button id="btnEdit" class="main" onclick="toggleEdit()">РЕДАГУВАТИ</button>
+      </div>
     </div>
 
   </div>
@@ -176,78 +175,78 @@ function logout(){
   location.href = "index.html";
 }
 
-(async function checkAccess(){
-  const token = localStorage.getItem("dimobl_token");
-  if (!token) return logout();
-
-  try{
-    const r = await fetch(`${API_URL}?action=check&token=${encodeURIComponent(token)}`);
-    const d = await r.json();
-
-    if (d.status !== "OK") return logout();
-
-    const role = String(d.role).toLowerCase().trim();
-    if (role !== REQUIRED_ROLE) return logout();
-
-    document.getElementById("user").textContent = `${d.name} (${role})`;
-  }catch{
-    logout();
-  }
-})();
-
-/* ====== CATEGORIES (editable) ====== */
-const LS_KEY = "dimobl_categories";
+/* ====== STATE ====== */
 let editMode = false;
 
-// стартові категорії (якщо localStorage пустий)
-const DEFAULT_CATS = [
-  { id:"finance",  title:"💰 ФІНАНСИ" },
-  { id:"food",     title:"🍽 ЇЖА" },
-  { id:"clothes",  title:"👕 ОДЯГ" },
-  { id:"goals",    title:"🎯 ЦІЛІ" },
-  { id:"tasks",    title:"📝 ЗАВДАННЯ" },
-  { id:"notes",    title:"📌 ПРИМІТКИ" },
-];
+// дані з БД (оригінал) і робоча копія
+let catsOriginal = [];
+let catsDraft = [];
 
-function loadCats(){
-  try{
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return DEFAULT_CATS.slice();
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) && arr.length ? arr : DEFAULT_CATS.slice();
-  }catch{
-    return DEFAULT_CATS.slice();
-  }
+/* ====== HELPERS ====== */
+function setEditStatus(text){
+  document.getElementById("editStatus").textContent = text || "";
 }
 
-function saveCats(cats){
-  localStorage.setItem(LS_KEY, JSON.stringify(cats));
+function normalizeRole(r){
+  return String(r || "").toLowerCase().trim();
 }
 
-function slugifyUA(s){
-  return s.toLowerCase()
+// робимо “код” для переходу (можеш потім підв’язати до сторінок)
+function makeCodeFromName(name){
+  return String(name || "")
+    .toLowerCase()
     .trim()
     .replace(/\s+/g, "_")
     .replace(/[^a-z0-9_\u0400-\u04FF]/g, "");
 }
 
+function cloneCats(arr){
+  return arr.map(x => ({...x}));
+}
+
+/* ====== LOAD FROM DB ====== */
+async function loadCatsFromDB(){
+  const token = localStorage.getItem("dimobl_token");
+  if (!token) return logout();
+
+  const r = await fetch(`${API_URL}?action=categories&token=${encodeURIComponent(token)}`);
+  const d = await r.json();
+
+  if (d.status !== "OK") throw new Error(d.message || "Помилка categories");
+
+  // d.categories: [{id, name, icon, active}]
+  // зберігаємо порядок як прийшов (це і є порядок з аркуша)
+  const arr = (d.categories || [])
+    .filter(c => Number(c.active) === 1) // показуємо тільки активні
+    .map(c => ({
+      dbId: c.id,                 // ID_Категорії (число)
+      name: String(c.name || ""),
+      icon: String(c.icon || ""),
+      code: makeCodeFromName(c.name) // для go()
+    }));
+
+  catsOriginal = cloneCats(arr);
+  catsDraft = cloneCats(arr);
+}
+
+/* ====== RENDER ====== */
 function renderCats(){
   const grid = document.getElementById("catGrid");
-  const cats = loadCats();
   grid.innerHTML = "";
 
-  cats.forEach((c, idx) => {
+  const list = editMode ? catsDraft : catsOriginal;
+
+  list.forEach((c, idx) => {
     const row = document.createElement("div");
     row.className = "catRow";
 
     const btn = document.createElement("button");
-    btn.textContent = c.title;
     btn.style.flex = "1";
+    btn.textContent = `${c.icon ? (c.icon + " ") : ""}${c.name}`;
     btn.onclick = () => {
       if (editMode) return;
-      go(c.id);
+      go(c.code);
     };
-
     row.appendChild(btn);
 
     if (editMode){
@@ -275,47 +274,112 @@ function renderCats(){
   });
 }
 
+/* ====== EDIT MODE UI ====== */
+function syncEditUI(){
+  document.getElementById("editBox").style.display = editMode ? "block" : "none";
+  document.getElementById("btnEdit").style.display = editMode ? "none" : "inline-block";
+  document.getElementById("btnCancel").style.display = editMode ? "inline-block" : "none";
+  document.getElementById("btnSave").style.display = editMode ? "inline-block" : "none";
+  setEditStatus(editMode ? "Редагується..." : "");
+}
+
 function toggleEdit(){
   editMode = !editMode;
-  document.getElementById("editBox").style.display = editMode ? "block" : "none";
+
+  // коли входимо в редагування — працюємо з копією
+  if (editMode){
+    catsDraft = cloneCats(catsOriginal);
+  }
+
+  syncEditUI();
   renderCats();
 }
 
+function cancelEdit(){
+  // відкат
+  catsDraft = cloneCats(catsOriginal);
+  editMode = false;
+  syncEditUI();
+  renderCats();
+}
+
+/* ====== EDIT ACTIONS ====== */
 function addCategory(){
-  const inp = document.getElementById("newCat");
-  const name = (inp.value || "").trim();
-  if (!name) return;
+  const nameInp = document.getElementById("newCatName");
+  const iconInp = document.getElementById("newCatIcon");
 
-  const cats = loadCats();
-  const id = slugifyUA(name);
+  const name = (nameInp.value || "").trim();
+  const icon = (iconInp.value || "").trim();
 
-  if (!id) return alert("Невірна назва");
-  if (cats.some(x => x.id === id)) return alert("Така категорія вже є");
+  if (!name) return alert("Введіть назву категорії");
 
-  cats.push({ id, title: name });
-  saveCats(cats);
-  inp.value = "";
+  // унікальність за назвою
+  if (catsDraft.some(x => x.name.toLowerCase() === name.toLowerCase())){
+    return alert("Така категорія вже є");
+  }
+
+  catsDraft.push({
+    dbId: Date.now(), // тимчасово, при збереженні перезапишемо ID послідовно
+    name,
+    icon,
+    code: makeCodeFromName(name)
+  });
+
+  nameInp.value = "";
+  iconInp.value = "";
   renderCats();
 }
 
 function deleteCat(idx){
-  const cats = loadCats();
-  cats.splice(idx, 1);
-  saveCats(cats);
+  catsDraft.splice(idx, 1);
   renderCats();
 }
 
 function moveCat(idx, dir){
-  const cats = loadCats();
   const n = idx + dir;
-  if (n < 0 || n >= cats.length) return;
+  if (n < 0 || n >= catsDraft.length) return;
 
-  const tmp = cats[idx];
-  cats[idx] = cats[n];
-  cats[n] = tmp;
+  const tmp = catsDraft[idx];
+  catsDraft[idx] = catsDraft[n];
+  catsDraft[n] = tmp;
 
-  saveCats(cats);
   renderCats();
+}
+
+/* ====== SAVE TO DB ====== */
+async function saveEdit(){
+  const token = localStorage.getItem("dimobl_token");
+  if (!token) return logout();
+
+  // формуємо payload у форматі Apps Script:
+  // categories: [{id, name, icon, active}]
+  // ВАЖЛИВО: порядок в масиві = порядок у таблиці
+  const payload = {
+    categories: catsDraft.map((c, i) => ({
+      id: i + 1,            // зробимо 1..N (простий стабільний порядок)
+      name: c.name,
+      icon: c.icon,
+      active: 1
+    }))
+  };
+
+  try{
+    const url = `${API_URL}?action=categories_save&token=${encodeURIComponent(token)}&data=${encodeURIComponent(JSON.stringify(payload))}`;
+    const r = await fetch(url);
+    const d = await r.json();
+
+    if (d.status !== "OK") return alert(d.message || "Не збережено");
+
+    // після успіху — приймаємо як новий оригінал
+    catsOriginal = cloneCats(catsDraft);
+    editMode = false;
+    syncEditUI();
+    renderCats();
+
+    alert("Збережено ✅");
+  }catch(e){
+    alert("Помилка збереження");
+  }
 }
 
 /* ====== NAV ====== */
@@ -335,8 +399,32 @@ function toggleTheme(){
 }
 applyTheme(localStorage.getItem("dimobl_theme") || "dark");
 
-/* перший рендер */
-renderCats();
+/* ====== INIT ====== */
+(async function init(){
+  // 1) checkAccess
+  const token = localStorage.getItem("dimobl_token");
+  if (!token) return logout();
+
+  try{
+    const r = await fetch(`${API_URL}?action=check&token=${encodeURIComponent(token)}`);
+    const d = await r.json();
+    if (d.status !== "OK") return logout();
+
+    const role = normalizeRole(d.role);
+    if (role !== REQUIRED_ROLE) return logout();
+
+    document.getElementById("user").textContent = `${d.name} (${role})`;
+
+    // 2) load cats from DB
+    await loadCatsFromDB();
+
+    // 3) render
+    syncEditUI();
+    renderCats();
+  }catch{
+    logout();
+  }
+})();
 </script>
 
 </body>
