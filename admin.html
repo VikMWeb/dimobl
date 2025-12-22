@@ -118,6 +118,16 @@ button.ctrl{
   gap:10px;
   align-items:center;
 }
+
+#userLine{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+#userLine h5{
+  margin:0;
+}
+
 </style>
 </head>
 
@@ -127,7 +137,10 @@ button.ctrl{
 
     <div class="top">
       <div>
-        <div class="brand">👑 <h5 id="user"></h5></div>
+        <div class="brand" id="userLine">  
+          <span>👑</span>
+          <h5 id="user"></h5>
+        </div>
         <div class="muted" >Головна:</div>
         <div class="muted statusLine" id="editStatus"></div>
       </div>
