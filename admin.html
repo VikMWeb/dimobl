@@ -364,9 +364,15 @@ async function saveEdit(){
   };
 
   try{
-    const url = `${API_URL}?action=categories_save&token=${encodeURIComponent(token)}&data=${encodeURIComponent(JSON.stringify(payload))}`;
-    const r = await fetch(url);
-    const d = await r.json();
+const params = new URLSearchParams({
+  action: "categories_save",
+  token: token,
+  data: JSON.stringify(payload)   // payload = { categories: [...] }
+});
+
+const url = `${API_URL}?${params.toString()}`;
+const d = await (await fetch(url)).json();
+
 
     if (d.status !== "OK") return alert(d.message || "Не збережено");
 
