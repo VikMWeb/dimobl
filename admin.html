@@ -64,6 +64,12 @@ body{
   margin-top:18px;
 }
 
+/* рядок з кнопкою + контролами редагування */
+.catRow{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
 
 button{
   padding:16px;
@@ -75,7 +81,7 @@ button{
   font-weight:700;
   cursor:pointer;
   transition:.15s;
-  text-align: left;
+  text-align:left;
 }
 
 button:hover{
@@ -89,11 +95,39 @@ button.main{
   border:0;
 }
 
+/* маленькі кнопки керування (⬆⬇🗑) */
+button.ctrl{
+  width:54px;
+  padding:14px 0;
+  text-align:center;
+}
+
 .footer{
   display:flex;
   justify-content:space-between;
   align-items:center;
   margin-top:18px;
+}
+
+/* панель додавання */
+.editBox{
+  display:none;
+  margin-top:14px;
+}
+.editRow{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.editInput{
+  flex:1;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--btn2);
+  color:var(--text);
+  outline:none;
+  box-sizing:border-box;
 }
 </style>
 </head>
@@ -110,19 +144,23 @@ button.main{
       <button onclick="toggleTheme()">🌓</button>
     </div>
 
-    <div class="grid">
-      
-      <button onclick="go('finance')">💰 ФІНАНСИ</button>
-      <button onclick="go('food')">🍽 ЇЖА</button>
-      <button onclick="go('clothes')">👕 ОДЯГ</button>
-      <button onclick="go('goals')">🎯 ЦІЛІ</button>
-      <button onclick="go('tasks')">📝 ЗАВДАННЯ</button>
-      <button onclick="go('notes')">📌 ПРИМІТКИ</button>
+    <!-- Динамічний список категорій -->
+    <div class="grid" id="catGrid"></div>
+
+    <!-- Панель редагування -->
+    <div class="editBox" id="editBox">
+      <div class="editRow">
+        <input id="newCat" class="editInput" placeholder="Нова категорія (назва)">
+        <button onclick="addCategory()" style="width:auto; padding:16px;">Додати</button>
+      </div>
+      <div class="muted" style="margin-top:8px;">
+        Режим редагування: ⬆⬇ переміщення, 🗑 видалення
+      </div>
     </div>
 
     <div class="footer">
       <button onclick="logout()">Вийти</button>
-      <button class="main" onclick="go('dashboard')">Головна</button>
+      <button class="main" onclick="toggleEdit()">РЕДАГУВАТИ</button>
     </div>
 
   </div>
@@ -151,19 +189,139 @@ function logout(){
     const role = String(d.role).toLowerCase().trim();
     if (role !== REQUIRED_ROLE) return logout();
 
-    document.getElementById("user").textContent =
-      `${d.name} (${role})`;
-
+    document.getElementById("user").textContent = `${d.name} (${role})`;
   }catch{
     logout();
   }
 })();
 
+/* ====== CATEGORIES (editable) ====== */
+const LS_KEY = "dimobl_categories";
+let editMode = false;
+
+// стартові категорії (якщо localStorage пустий)
+const DEFAULT_CATS = [
+  { id:"finance",  title:"💰 ФІНАНСИ" },
+  { id:"food",     title:"🍽 ЇЖА" },
+  { id:"clothes",  title:"👕 ОДЯГ" },
+  { id:"goals",    title:"🎯 ЦІЛІ" },
+  { id:"tasks",    title:"📝 ЗАВДАННЯ" },
+  { id:"notes",    title:"📌 ПРИМІТКИ" },
+];
+
+function loadCats(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return DEFAULT_CATS.slice();
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) && arr.length ? arr : DEFAULT_CATS.slice();
+  }catch{
+    return DEFAULT_CATS.slice();
+  }
+}
+
+function saveCats(cats){
+  localStorage.setItem(LS_KEY, JSON.stringify(cats));
+}
+
+function slugifyUA(s){
+  return s.toLowerCase()
+    .trim()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_\u0400-\u04FF]/g, "");
+}
+
+function renderCats(){
+  const grid = document.getElementById("catGrid");
+  const cats = loadCats();
+  grid.innerHTML = "";
+
+  cats.forEach((c, idx) => {
+    const row = document.createElement("div");
+    row.className = "catRow";
+
+    const btn = document.createElement("button");
+    btn.textContent = c.title;
+    btn.style.flex = "1";
+    btn.onclick = () => {
+      if (editMode) return;
+      go(c.id);
+    };
+
+    row.appendChild(btn);
+
+    if (editMode){
+      const up = document.createElement("button");
+      up.className = "ctrl";
+      up.textContent = "⬆";
+      up.onclick = () => moveCat(idx, -1);
+
+      const down = document.createElement("button");
+      down.className = "ctrl";
+      down.textContent = "⬇";
+      down.onclick = () => moveCat(idx, +1);
+
+      const del = document.createElement("button");
+      del.className = "ctrl";
+      del.textContent = "🗑";
+      del.onclick = () => deleteCat(idx);
+
+      row.appendChild(up);
+      row.appendChild(down);
+      row.appendChild(del);
+    }
+
+    grid.appendChild(row);
+  });
+}
+
+function toggleEdit(){
+  editMode = !editMode;
+  document.getElementById("editBox").style.display = editMode ? "block" : "none";
+  renderCats();
+}
+
+function addCategory(){
+  const inp = document.getElementById("newCat");
+  const name = (inp.value || "").trim();
+  if (!name) return;
+
+  const cats = loadCats();
+  const id = slugifyUA(name);
+
+  if (!id) return alert("Невірна назва");
+  if (cats.some(x => x.id === id)) return alert("Така категорія вже є");
+
+  cats.push({ id, title: name });
+  saveCats(cats);
+  inp.value = "";
+  renderCats();
+}
+
+function deleteCat(idx){
+  const cats = loadCats();
+  cats.splice(idx, 1);
+  saveCats(cats);
+  renderCats();
+}
+
+function moveCat(idx, dir){
+  const cats = loadCats();
+  const n = idx + dir;
+  if (n < 0 || n >= cats.length) return;
+
+  const tmp = cats[idx];
+  cats[idx] = cats[n];
+  cats[n] = tmp;
+
+  saveCats(cats);
+  renderCats();
+}
+
 /* ====== NAV ====== */
 function go(section){
   alert("Перехід у розділ: " + section);
-  // тут пізніше:
-  // location.href = section + ".html";
+  // пізніше: location.href = section + ".html";
 }
 
 /* ====== THEME ====== */
@@ -176,6 +334,9 @@ function toggleTheme(){
   applyTheme(cur === "dark" ? "light" : "dark");
 }
 applyTheme(localStorage.getItem("dimobl_theme") || "dark");
+
+/* перший рендер */
+renderCats();
 </script>
 
 </body>
