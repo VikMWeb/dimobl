@@ -1,1 +1,121 @@
+:root{
+  --bg:#0f1115; --card:#171a21; --text:#e9eef7; --muted:#9aa7bd;
+  --border:#2a3140; --btn:#21c55d; --btnText:#06120a;
+  --btn2:#0f1218;
+}
+[data-theme="light"]{
+  --bg:#f5f7fb; --card:#ffffff; --text:#0f172a; --muted:#5b677a;
+  --border:#dbe3ef; --btn:#16a34a; --btnText:#ffffff;
+  --btn2:#f3f6fb;
+}
 
+body{ margin:0; font-family:system-ui,Segoe UI,Arial; background:var(--bg); color:var(--text); }
+
+.wrap{
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:18px;
+}
+.card{
+  width:min(520px,100%);
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px;
+}
+.top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.brand{ font-weight:800; font-size:26px; }
+.muted{ color:var(--muted); font-size:13px; }
+
+.statusLine{
+  margin-top:4px;
+  min-height:18px;
+}
+
+.grid{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin-top:18px;
+}
+
+/* рядок з кнопкою + контролами редагування */
+.catRow{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+button{
+  padding:16px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:var(--btn2);
+  color:var(--text);
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.15s;
+  text-align:left;
+}
+button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(0,0,0,.25);
+}
+button.main{
+  background:var(--btn);
+  color:var(--btnText);
+  border:0;
+}
+
+/* маленькі кнопки керування (⬆⬇🗑) */
+button.ctrl{
+  width:54px;
+  padding:14px 0;
+  text-align:center;
+}
+
+/* панель додавання */
+.editBox{
+  display:none;
+  margin-top:14px;
+}
+.editRow{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.editInput{
+  flex:1;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--btn2);
+  color:var(--text);
+  outline:none;
+  box-sizing:border-box;
+}
+
+.footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:18px;
+  gap:10px;
+}
+.footerRight{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.userLine{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.userLine h5{
+  margin:0;
+}
