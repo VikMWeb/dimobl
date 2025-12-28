@@ -1,8 +1,6 @@
 /* ====== AUTH ====== */
 const API_URL = window.API_URL;
 
-console.log("API_URL =", API_URL);
-
 const REQUIRED_ROLE = "admin";
 
 function logout(){
