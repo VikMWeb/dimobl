@@ -49,3 +49,5 @@ button[disabled]{
 input[disabled]{
   opacity:.75;
 }
+
+.progress[hidden]{ display:none !important; }
