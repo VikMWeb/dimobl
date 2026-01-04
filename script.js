@@ -78,7 +78,7 @@ async function auth() {
   const password = document.getElementById("password").value.trim();
   if (!login || !password) return setMsg("Введіть логін і пароль");
 
-  setLoading(true, "Виконую вхід…");
+  setLoading(true, "Виконується вхід…");
 
   try {
     const url = `${API_URL}?action=login&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`;
