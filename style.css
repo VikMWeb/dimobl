@@ -18,3 +18,34 @@
   button{width:100%; margin-top:14px; padding:14px; border:0; border-radius:12px; background:var(--btn); color:var(--btnText); font-weight:800; cursor:pointer;}
   .smallBtn{width:auto; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:transparent; color:var(--text);}
   .error{margin-top:10px; color:#ff6b6b; min-height:20px;}
+
+.progress{
+  margin-top:12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.spinner{
+  width:16px;
+  height:16px;
+  border:2px solid var(--border);
+  border-top-color: var(--text);
+  border-radius:50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin{
+  to{ transform: rotate(360deg); }
+}
+
+button[disabled]{
+  opacity:.65;
+  cursor:not-allowed;
+}
+
+input[disabled]{
+  opacity:.75;
+}
