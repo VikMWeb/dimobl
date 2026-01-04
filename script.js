@@ -39,34 +39,8 @@ function setLoading(isOn, text){
   if (passEl) passEl.disabled = isOn;
 }
 
-// якщо вже є сесія — пробуємо відразу зайти
-(async function autoIn(){
-  const token = localStorage.getItem("dimobl_token");
-  if (!token) return;
-
-  setMsg("");
-  setLoading(true, "Перевіряю сесію…");
-
-  try{
-    const r = await fetch(`${API_URL}?action=check&token=${encodeURIComponent(token)}`);
-    const d = await r.json();
-
-    if (d.status === "OK") {
-      if (d.role) localStorage.setItem("dimobl_role", d.role);
-      redirectByRole(d.role || localStorage.getItem("dimobl_role"));
-      return;
-    } else {
-      // токен невалідний — прибираємо тільки токен
-      clearToken();
-      setMsg("Сесія завершилась. Увійдіть знову.");
-    }
-  } catch {
-    // якщо сервер/мережа тимчасово недоступні — не стираємо дані
-    setMsg("Немає зв'язку з сервером");
-  } finally {
-    setLoading(false);
-  }
-})();
+// на старті сторінки — точно ховаємо прогрес
+setLoading(false);
 
 document.addEventListener("keydown", (e)=>{
   if (e.key === "Enter") {
