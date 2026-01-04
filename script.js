@@ -14,10 +14,38 @@ function clearAuth(){
   keys.forEach(k => localStorage.removeItem(k));
 }
 
+function setMsg(t){
+  const el = document.getElementById("msg");
+  if (el) el.textContent = t || "";
+}
+
+// прогрес + блокування форми
+let isAuthBusy = false;
+
+function setLoading(isOn, text){
+  isAuthBusy = !!isOn;
+
+  const p  = document.getElementById("progress");
+  const pt = document.getElementById("progressText");
+  const btn = document.getElementById("btnLogin");
+  const loginEl = document.getElementById("login");
+  const passEl  = document.getElementById("password");
+
+  if (pt && text) pt.textContent = text;
+  if (p) p.hidden = !isOn;
+
+  if (btn) btn.disabled = isOn;
+  if (loginEl) loginEl.disabled = isOn;
+  if (passEl) passEl.disabled = isOn;
+}
+
 // якщо вже є сесія — пробуємо відразу зайти
 (async function autoIn(){
   const token = localStorage.getItem("dimobl_token");
   if (!token) return;
+
+  setMsg("");
+  setLoading(true, "Перевіряю сесію…");
 
   try{
     const r = await fetch(`${API_URL}?action=check&token=${encodeURIComponent(token)}`);
@@ -26,27 +54,36 @@ function clearAuth(){
     if (d.status === "OK") {
       if (d.role) localStorage.setItem("dimobl_role", d.role);
       redirectByRole(d.role || localStorage.getItem("dimobl_role"));
+      return;
     } else {
       // токен невалідний — прибираємо тільки токен
       clearToken();
+      setMsg("Сесія завершилась. Увійдіть знову.");
     }
   } catch {
     // якщо сервер/мережа тимчасово недоступні — не стираємо дані
     setMsg("Немає зв'язку з сервером");
+  } finally {
+    setLoading(false);
   }
 })();
 
 document.addEventListener("keydown", (e)=>{
-  if (e.key === "Enter") auth();
+  if (e.key === "Enter") {
+    // щоб Enter не запускав повторно під час запиту
+    if (!isAuthBusy) auth();
+  }
 });
 
-function setMsg(t){ document.getElementById("msg").textContent = t || ""; }
-
 async function auth() {
+  if (isAuthBusy) return;
+
   setMsg("");
   const login = document.getElementById("login").value.trim();
   const password = document.getElementById("password").value.trim();
   if (!login || !password) return setMsg("Введіть логін і пароль");
+
+  setLoading(true, "Виконую вхід…");
 
   try {
     const url = `${API_URL}?action=login&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`;
@@ -62,9 +99,10 @@ async function auth() {
     localStorage.setItem("dimobl_lastLogin", d.lastLogin || "");
 
     redirectByRole(d.role);
-
   } catch (e) {
     setMsg("Помилка запиту");
+  } finally {
+    setLoading(false);
   }
 }
 
