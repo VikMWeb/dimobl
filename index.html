@@ -22,9 +22,11 @@
     <div class="row">
       <input id="login" placeholder="Логін" autocomplete="username" />
     </div>
-    <div class="row">
-      <input id="password" type="password" placeholder="Пароль" autocomplete="current-password" />
-    </div>
+<div class="row passWrap">
+  <input id="password" type="password" placeholder="Пароль" autocomplete="current-password" />
+  <button type="button" class="eyeBtn" id="btnEye" aria-label="Показати пароль" onclick="togglePassword()">👁️</button>
+</div>
+
 
 <button id="btnLogin" onclick="auth()">ВХІД</button>
 
