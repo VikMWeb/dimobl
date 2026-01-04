@@ -1,6 +1,12 @@
 
 const API_URL = window.API_URL;
 
+if (!API_URL) {
+  document.getElementById("msg").textContent = "Немає API_URL (перевір config.js)";
+  throw new Error("API_URL is missing");
+}
+
+
 // якщо вже є сесія — пробуємо відразу зайти
 (async function autoIn(){
   const token = localStorage.getItem("dimobl_token");
