@@ -26,8 +26,16 @@
       <input id="password" type="password" placeholder="Пароль" autocomplete="current-password" />
     </div>
 
-    <button onclick="auth()">ВХІД</button>
-    <div class="error" id="msg"></div>
+<button id="btnLogin" onclick="auth()">ВХІД</button>
+
+<div class="progress" id="progress" hidden>
+  <span class="spinner" aria-hidden="true"></span>
+  <span id="progressText">Зачекайте…</span>
+</div>
+
+<div class="error" id="msg"></div>
+
+    
   </div>
 </div>
 
