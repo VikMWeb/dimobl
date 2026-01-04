@@ -83,3 +83,21 @@ input[disabled]{
   margin-top:0;
 }
 
+.eyeBtn{
+  /* твої стилі вже є — лишаємо, додамо тільки для SVG */
+}
+
+.eyeIcon{
+  width:18px;
+  height:18px;
+  display:block;
+  fill: currentColor; /* бере колір кнопки */
+}
+
+/* за замовчуванням пароль приховано -> показуємо "перекреслене око" */
+.eyeOpen{ display:none; }
+.eyeOff{ display:block; }
+
+/* коли пароль показано */
+.passShown .eyeOpen{ display:block; }
+.passShown .eyeOff{ display:none; }
