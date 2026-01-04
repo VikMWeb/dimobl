@@ -102,4 +102,21 @@ input[disabled]{
 .passShown .eyeOpen{ display:block; }
 .passShown .eyeOff{ display:none; }
 
+/* Прибрати білий/жовтий фон автозаповнення (Chrome/Edge) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color: var(--text) !important;     /* колір тексту */
+  caret-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px var(--input) inset !important; /* фон як у темі */
+  box-shadow: 0 0 0 1000px var(--input) inset !important;
+  transition: background-color 9999s ease-out 0s;     /* щоб браузер не мигав */
+}
+
+/* Firefox (підтримка :autofill) */
+input:autofill{
+  box-shadow: 0 0 0 1000px var(--input) inset !important;
+  -webkit-text-fill-color: var(--text) !important;
+}
 
