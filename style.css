@@ -67,8 +67,8 @@ input[disabled]{
   transform:translateY(-50%);
   width:36px;
   height:36px;
-  border-radius:10px;
-  border:1px solid var(--border);
+/*  border-radius:10px; */
+/*  border:1px solid var(--border); */
   background:transparent;
   color:var(--text);
   cursor:pointer;
