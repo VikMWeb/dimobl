@@ -28,9 +28,12 @@ function togglePassword(){
   const show = p.type === "password";
   p.type = show ? "text" : "password";
 
-  b.textContent = show ? "🙈" : "👁️";
+  // клас на кнопці керує, яка іконка показується
+  b.classList.toggle("passShown", show);
+
   b.setAttribute("aria-label", show ? "Сховати пароль" : "Показати пароль");
 }
+
 
 // прогрес + блокування форми
 let isAuthBusy = false;
@@ -56,6 +59,9 @@ function setLoading(isOn, text){
 
 // на старті сторінки — точно ховаємо прогрес
 setLoading(false);
+
+document.getElementById("btnEye")?.classList.remove("passShown");
+
 
 // document.addEventListener("keydown", (e)=>{
 //   if (e.key === "Enter") {
