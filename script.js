@@ -1,4 +1,3 @@
-
 const API_URL = window.API_URL;
 
 if (!API_URL) {
@@ -6,17 +5,35 @@ if (!API_URL) {
   throw new Error("API_URL is missing");
 }
 
+function clearToken(){
+  localStorage.removeItem("dimobl_token");
+}
+
+function clearAuth(){
+  const keys = ["dimobl_token","dimobl_role","dimobl_name","dimobl_login","dimobl_lastLogin"];
+  keys.forEach(k => localStorage.removeItem(k));
+}
 
 // якщо вже є сесія — пробуємо відразу зайти
 (async function autoIn(){
   const token = localStorage.getItem("dimobl_token");
   if (!token) return;
+
   try{
     const r = await fetch(`${API_URL}?action=check&token=${encodeURIComponent(token)}`);
     const d = await r.json();
-    if (d.status === "OK") redirectByRole(d.role);
-    else localStorage.clear();
-  }catch{ localStorage.clear(); }
+
+    if (d.status === "OK") {
+      if (d.role) localStorage.setItem("dimobl_role", d.role);
+      redirectByRole(d.role || localStorage.getItem("dimobl_role"));
+    } else {
+      // токен невалідний — прибираємо тільки токен
+      clearToken();
+    }
+  } catch {
+    // якщо сервер/мережа тимчасово недоступні — не стираємо дані
+    setMsg("Немає зв'язку з сервером");
+  }
 })();
 
 document.addEventListener("keydown", (e)=>{
