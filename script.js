@@ -19,6 +19,19 @@ function setMsg(t){
   if (el) el.textContent = t || "";
 }
 
+/* 👁️ Показати / сховати пароль */
+function togglePassword(){
+  const p = document.getElementById("password");
+  const b = document.getElementById("btnEye");
+  if (!p || !b) return;
+
+  const show = p.type === "password";
+  p.type = show ? "text" : "password";
+
+  b.textContent = show ? "🙈" : "👁️";
+  b.setAttribute("aria-label", show ? "Сховати пароль" : "Показати пароль");
+}
+
 // прогрес + блокування форми
 let isAuthBusy = false;
 
@@ -30,6 +43,7 @@ function setLoading(isOn, text){
   const btn = document.getElementById("btnLogin");
   const loginEl = document.getElementById("login");
   const passEl  = document.getElementById("password");
+  const eyeBtn  = document.getElementById("btnEye");
 
   if (pt && text) pt.textContent = text;
   if (p) p.hidden = !isOn;
@@ -37,6 +51,7 @@ function setLoading(isOn, text){
   if (btn) btn.disabled = isOn;
   if (loginEl) loginEl.disabled = isOn;
   if (passEl) passEl.disabled = isOn;
+  if (eyeBtn) eyeBtn.disabled = isOn;
 }
 
 // на старті сторінки — точно ховаємо прогрес
