@@ -57,12 +57,12 @@ function setLoading(isOn, text){
 // на старті сторінки — точно ховаємо прогрес
 setLoading(false);
 
-document.addEventListener("keydown", (e)=>{
-  if (e.key === "Enter") {
+// document.addEventListener("keydown", (e)=>{
+//   if (e.key === "Enter") {
     // щоб Enter не запускав повторно під час запиту
-    if (!isAuthBusy) auth();
-  }
-});
+//     if (!isAuthBusy) auth();
+//   }
+// });
 
 async function auth() {
   if (isAuthBusy) return;
