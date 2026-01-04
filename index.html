@@ -24,7 +24,20 @@
     </div>
 <div class="row passWrap">
   <input id="password" type="password" placeholder="Пароль" autocomplete="current-password" />
-  <button type="button" class="eyeBtn" id="btnEye" aria-label="Показати пароль" onclick="togglePassword()">👁️</button>
+  
+  <button type="button" class="eyeBtn" id="btnEye" aria-label="Показати пароль" onclick="togglePassword()">
+  <!-- eye (open) -->
+  <svg class="eyeIcon eyeOpen" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 5c-5.5 0-9.5 4.5-10.8 6.5a1 1 0 0 0 0 1C2.5 14.5 6.5 19 12 19s9.5-4.5 10.8-6.5a1 1 0 0 0 0-1C21.5 9.5 17.5 5 12 5zm0 12c-3 0-5.5-2.5-5.5-5.5S9 6 12 6s5.5 2.5 5.5 5.5S15 17 12 17zm0-9a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/>
+  </svg>
+
+  <!-- eye (slashed) -->
+  <svg class="eyeIcon eyeOff" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M2.3 3.7a1 1 0 0 1 1.4 0l16.6 16.6a1 1 0 1 1-1.4 1.4l-2.2-2.2C15.3 20.1 13.7 20.5 12 20.5c-5.9 0-10.1-4.9-11.6-7a1 1 0 0 1 0-1c.7-1.1 2.3-3.1 4.5-4.7L2.3 5.1a1 1 0 0 1 0-1.4zM7 9.9c-1.7 1.3-2.9 2.9-3.5 3.9 1.4 2 4.7 5.7 8.5 5.7 1 0 2-.2 2.9-.6l-1.7-1.7a4 4 0 0 1-5-5L7 9.9z"/>
+    <path d="M12 4.5c5.9 0 10.1 4.9 11.6 7a1 1 0 0 1 0 1c-.8 1.2-2.7 3.6-5.4 5.2l-1.5-1.5c2.1-1.2 3.6-3.1 4.3-4.2-1.4-2-4.7-5.7-8.5-5.7-1.4 0-2.7.3-3.9.9L6.9 5.7c1.5-.8 3.2-1.2 5.1-1.2z"/>
+  </svg>
+</button>
+
 </div>
 
 
