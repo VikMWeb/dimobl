@@ -84,7 +84,7 @@ input[disabled]{
 }
 
 .eyeBtn{
-  /* твої стилі вже є — лишаємо, додамо тільки для SVG */
+  color: var(--text);          /* темна: білий, світла: чорний */
 }
 
 .eyeIcon{
@@ -101,3 +101,5 @@ input[disabled]{
 /* коли пароль показано */
 .passShown .eyeOpen{ display:block; }
 .passShown .eyeOff{ display:none; }
+
+
